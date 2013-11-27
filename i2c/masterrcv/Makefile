@@ -9,7 +9,7 @@ ASFLAGS = -g
 
 vpath %.c ../common
 
-OBJS=  $(STARTUP) stm32l152d_eval.o main.o
+OBJS=  $(STARTUP) stm32l1xx_it.o stm32l152d_eval.o main.o
 OBJS+= stm32l1xx_rcc.o stm32l1xx_gpio.o misc.o stm32l1xx_i2c.o 
 
 # include common make file
