@@ -23,6 +23,7 @@ AS=$(TOOLROOT)/arm-none-eabi-as
 CORE=$(LIBROOT)/Libraries/CMSIS
 DEVICE=$(CORE)/Device/ST/STM32L1xx
 PERIPH=$(LIBROOT)/Libraries/STM32L1xx_StdPeriph_Driver
+BOARD=$(TEMPLATEROOT)/stm32l-discovery
 
 # Search path for standard files
 
@@ -39,8 +40,7 @@ vpath %.c $(DEVICE)
 #vpath %.c $(TEMPLATEROOT)/Library/ff9/src
 #vpath %.c $(TEMPLATEROOT)/Library/ff9/src/option
 #vpath %.c $(TEMPLATEROOT)/Library
-vpath %.c $(TEMPLATEROOT)/stm32l-discovery
-vpath %.s $(TEMPLATEROOT)/stm32l-discovery
+vpath % $(BOARD)
 
 #  Processor specific
 
@@ -71,7 +71,7 @@ CFLAGS += -mfix-cortex-m3-ldrd
 CFLAGS += -fno-strict-aliasing
 CFLAGS += -ffast-math
 CFLAGS+= -I. -I$(TEMPLATEROOT)
-CFLAGS+= -I$(DEVICE)/Include -I$(CORE)/Include -I$(PERIPH)/inc
+CFLAGS+= -I$(DEVICE)/Include -I$(CORE)/Include -I$(PERIPH)/inc -I$(BOARD)
 CFLAGS+= -D$(PTYPE) -DUSE_STDPERIPH_DRIVER $(FULLASSERT)
 #CFLAGS+= -I$(TEMPLATEROOT)/Library
 #CFLAGS+=-I$(TEMPLATEROOT)/Library/ff9/src 
