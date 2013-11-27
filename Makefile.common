@@ -1,14 +1,15 @@
 # name of executable
 
-ELF=$(notdir $(CURDIR)).elf                    
+PROJECT ?= $(notdir $(CURDIR))
+ELF=$(PROJECT).elf
 
 # Tool path
 
-TOOLROOT=/l/arm/codesourcery/bin
+TOOLROOT=/cortex/gcc-arm-none-eabi-4_6-2012q4/bin
 
 # Library path
 
-LIBROOT=/l/arm/STM32F10x_StdPeriph_Lib_V3.5.0
+LIBROOT=$(TEMPLATEROOT)/stm32lib
 
 # Tools
 
@@ -19,9 +20,9 @@ AS=$(TOOLROOT)/arm-none-eabi-as
 
 # Code Paths
 
-DEVICE=$(LIBROOT)/Libraries/CMSIS/CM3/DeviceSupport/ST/STM32F10x
-CORE=$(LIBROOT)/Libraries/CMSIS/CM3/CoreSupport
-PERIPH=$(LIBROOT)/Libraries/STM32F10x_StdPeriph_Driver
+CORE=$(LIBROOT)/Libraries/CMSIS
+DEVICE=$(CORE)/Device/ST/STM32L1xx
+PERIPH=$(LIBROOT)/Libraries/STM32L1xx_StdPeriph_Driver
 
 # Search path for standard files
 
@@ -35,51 +36,79 @@ vpath %.c $(DEVICE)
 
 # Search path for Library
 
-vpath %.c $(TEMPLATEROOT)/Library/ff9/src
-vpath %.c $(TEMPLATEROOT)/Library/ff9/src/option
-vpath %.c $(TEMPLATEROOT)/Library
+#vpath %.c $(TEMPLATEROOT)/Library/ff9/src
+#vpath %.c $(TEMPLATEROOT)/Library/ff9/src/option
+#vpath %.c $(TEMPLATEROOT)/Library
+vpath %.c $(TEMPLATEROOT)/stm32l-discovery
+vpath %.s $(TEMPLATEROOT)/stm32l-discovery
 
 #  Processor specific
 
-PTYPE = STM32F10X_MD_VL 
-LDSCRIPT = $(TEMPLATEROOT)/stm32f100.ld
-STARTUP= startup_stm32f10x.o system_stm32f10x.o 
+PTYPE = STM32L1XX_MDP
+LDSCRIPT = $(TEMPLATEROOT)/stm32l-discovery/stm32l152rb.lsf
+STARTUP= startup_stm32l1xx_md.o system_stm32l1xx.o
 
 # Compilation Flags
 
-FULLASSERT = -DUSE_FULL_ASSERT 
+FULLASSERT = -DUSE_FULL_ASSERT
 
-LDFLAGS+= -T$(LDSCRIPT) -mthumb -mcpu=cortex-m3 
-CFLAGS+= -mcpu=cortex-m3 -mthumb 
-CFLAGS+= -I$(TEMPLATEROOT) -I$(DEVICE) -I$(CORE) -I$(PERIPH)/inc -I.
+CFLAGS += -gdwarf-2
+CFLAGS += -Wall
+CFLAGS += -c
+CFLAGS += -fmessage-length=0
+CFLAGS += -fno-builtin
+CFLAGS += -ffunction-sections
+CFLAGS += -fdata-sections
+CFLAGS += -msoft-float
+CFLAGS += -mapcs-frame
+CFLAGS += -D__thumb2__=1
+CFLAGS += -mno-sched-prolog
+CFLAGS += -fno-hosted
+CFLAGS += -mtune=cortex-m3
+CFLAGS += -mcpu=cortex-m3
+CFLAGS += -mthumb
+CFLAGS += -mfix-cortex-m3-ldrd
+CFLAGS += -fno-strict-aliasing
+CFLAGS += -ffast-math
+CFLAGS+= -I. -I$(TEMPLATEROOT)
+CFLAGS+= -I$(DEVICE)/Include -I$(CORE)/Include -I$(PERIPH)/inc
 CFLAGS+= -D$(PTYPE) -DUSE_STDPERIPH_DRIVER $(FULLASSERT)
-CFLAGS+= -I$(TEMPLATEROOT)/Library/ff9/src -I$(TEMPLATEROOT)/Library
+#CFLAGS+= -I$(TEMPLATEROOT)/Library
+#CFLAGS+=-I$(TEMPLATEROOT)/Library/ff9/src 
 
-# Build executable 
+LDFLAGS += -T$(LDSCRIPT) -Xlinker -Map=$(PROJECT).map
+LDFLAGS += -Wl,--gc-sections
+LDFLAGS += -mcpu=cortex-m3
+LDFLAGS += -mthumb
+LDFLAGS += -static   
+LDFLAGS += -nostdlib
+
+#LIB_LD = -lm
+
+ASMFLAGS  = -D__ASSEMBLY__
+ASMFLAGS += -g $(CFLAGS)
+ASMFLAGS += -I. -x assembler-with-cpp
+
+# Build executable
 
 $(ELF) : $(OBJS)
-	$(LD) $(LDFLAGS) -o $@ $(OBJS) $(LDLIBS)
+	@echo Linking: $@
+	@$(LD) $(LDFLAGS) -o $@ $(OBJS) $(LDLIBS)
 
 # compile and generate dependency info
 
 %.o: %.c
-	$(CC) -c $(CFLAGS) $< -o $@
-	$(CC) -MM $(CFLAGS) $< > $*.d
+	@echo Compiling: $<
+	@$(CC) -c $(CFLAGS) $< -o $@
+	@$(CC) -MM $(CFLAGS) $< > $*.d
 
 %.o: %.s
-	$(CC) -c $(CFLAGS) $< -o $@
+	@echo Assembling: $<
+	@$(CC) -c $(ASMFLAGS) $< -o $@
 
 clean:
-	rm -f $(OBJS) $(OBJS:.o=.d) $(ELF) startup_stm32f* $(CLEANOTHER)
-
-debug: $(ELF)
-	arm-none-eabi-gdb $(ELF)
-
+	rm -f $(OBJS) $(OBJS:.o=.d) $(ELF) $(CLEANOTHER)
 
 # pull in dependencies
 
 -include $(OBJS:.o=.d)
-
-
-
-

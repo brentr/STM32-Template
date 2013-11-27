@@ -1,8 +1,8 @@
-STM32-Template
-==============
+STM32L-Template
+===============
 
-A Build template for projects using the stm32vl discovery board, 
-CodeSourcery gnu toolchain, and the STM32F10x Standard Peripheral Library.
+A Build template for projects using the stm32l1xx discovery board, 
+and its Standard Peripheral Library.
 
 To test:
 
