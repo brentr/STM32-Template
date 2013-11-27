@@ -10,7 +10,6 @@
 #include "macros.h"
 
 #include "stm32l1xx.h"
-#include "stm32l1xx_it.h"
 #include "core_cm3.h"
 
 #include "mcu_gpio.h"
